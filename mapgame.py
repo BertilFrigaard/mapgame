@@ -43,7 +43,9 @@ class Game:
     def answer(self, pos):
         self.circleStart = [30, pos]
         self.circleEnd = [30, (int(self.nextQuestion[1]), int(self.nextQuestion[2]))]
-        self.pointText.update(40, str(math.dist(self.circleStart[1], self.circleEnd[1])), "lime")
+        print(math.dist(self.circleStart[1], self.circleEnd[1]))
+        n = 10 - math.floor(min(math.dist(self.circleStart[1], self.circleEnd[1]) * 5, 1000) / 100)
+        self.pointText.update(40, str(n), "lime")
         self.next()
 
     def initBackground(self, img):
