@@ -9,6 +9,7 @@ pygame.init()
 screen = pygame.display.set_mode((1400,800))
 clock = pygame.time.Clock()
 running = True
+curScreen = 1 # 1=Home, 2=Game, 3=Gameover, 4=Create
 
 class Text:
     def __init__(self, fontSize, text, color):
@@ -21,14 +22,65 @@ class Text:
     def draw(self, top, left):
         screen.blit(self.mySurface, (top, left))
 
+class Button:
+    def __init__(self, left, top, width, height, text, fontSize, textoffsetleft, textoffsettop, func):
+        self.btnRect = pygame.Rect(left, top, width, height)
+        self.btnText = Text(fontSize, text, "white")
+        self.left = left
+        self.top = top
+        self.fontSize = fontSize
+        self.text = text
+        self.textoffsetleft = textoffsetleft
+        self.textoffsettop = textoffsettop
+        self.func = func
+
+    def draw(self):
+        if self.btnRect.collidepoint(pygame.mouse.get_pos()):
+            pygame.draw.rect(screen, "black", self.btnRect, 1)
+            self.btnText.update(self.fontSize, self.text, "black")
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONUP:
+                    self.func()
+        else:
+            pygame.draw.rect(screen, "black", self.btnRect)
+            self.btnText.update(self.fontSize, self.text, "white")
+
+        self.btnText.draw(self.left + self.textoffsetleft, self.top + self.textoffsettop)
+
+
+class Home:
+    def __init__(self):
+        print("Home initiated")
+        self.background = pygame.transform.scale(pygame.image.load("./img/Final.png"), (1400,800))
+        self.title = Text(80, "Mapgame", "Black")
+        self.playBtn = Button(50, 250, 120, 40, "Play", 35, 28, 10, self.play)
+        self.createBtn = Button(50, 320, 120, 40, "Create", 35, 20, 10, self.create)
+        
+    def play(self):
+        global curScreen
+        curScreen = 2
+
+    def create(self):
+        global curScreen 
+        curScreen = 4
+
+    def draw(self):
+        screen.blit(self.background, (0,0))
+        self.title.draw(50,150)
+        self.playBtn.draw()
+        self.createBtn.draw()
+
+
 class Game:
     def __init__(self, fileData):
         print("Game initiated")
         self.questions = []
+        self.points = 0
         self.circleStart = [0, (0,0)]
         self.circleEnd = [0, (0,0)]
         self.pointText = Text(40, "", "lime")
         self.questionText = Text(50, "Ready?", "black")
+        self.scoreText = Text(40, "Points: 0", "black")
 
         for line in fileData:
             self.questions.append(line.split(" "))
@@ -39,6 +91,7 @@ class Game:
     def next(self):
         self.nextQuestion = self.questions.pop(0)
         self.questionText.update(50, "Find " + self.nextQuestion[0], "black")
+        self.scoreText.update(40, "Points: " + str(self.points), "black")
     
     def answer(self, pos):
         self.circleStart = [30, pos]
@@ -46,6 +99,7 @@ class Game:
         print(math.dist(self.circleStart[1], self.circleEnd[1]))
         n = 10 - math.floor(min(math.dist(self.circleStart[1], self.circleEnd[1]) * 5, 1000) / 100)
         self.pointText.update(40, str(n), "lime")
+        self.points += n
         self.next()
 
     def initBackground(self, img):
@@ -54,6 +108,7 @@ class Game:
     def draw(self):
         screen.blit(self.image, (0,0))  
         self.questionText.draw(50,50)   
+        self.scoreText.draw(50,90)   
         if self.circleStart[0] > 0:
             self.circleStart[0] -= 1
             pygame.draw.circle(screen, "red", self.circleStart[1], 15)   
@@ -61,22 +116,52 @@ class Game:
             pygame.draw.line(screen, "red", self.circleStart[1], self.circleEnd[1], 3)
             self.pointText.draw(self.circleEnd[1][0], self.circleEnd[1][1])
 
-win = tkinter.Tk
-file = tkfile.askopenfile(initialdir=".")
-fileData = [line.strip("\n") for line in file.readlines()]
-image = fileData.pop(0)
-game = Game(fileData)
-game.initBackground(pygame.image.load(image))
+class Editor:
+    def __init__(self, img):
+        print("hi")
+
+homeScreen = Home()
 
 while running:
     screen.fill("white")
-    game.draw()
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+    if curScreen == 1:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        homeScreen.draw()
 
-        if event.type == pygame.MOUSEBUTTONUP:
-            game.answer(pygame.mouse.get_pos())
+    elif curScreen == 2:
+        try: 
+            game
+        except NameError:
+            win = tkinter.Tk
+            file = tkfile.askopenfile(initialdir=".")
+            fileData = [line.strip("\n") for line in file.readlines()]
+            image = fileData.pop(0)
+            game = Game(fileData)
+            game.initBackground(pygame.image.load(image))
+
+        game.draw()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            if event.type == pygame.MOUSEBUTTONUP:
+                game.answer(pygame.mouse.get_pos())
+
+    elif curScreen == 3:
+        print("hi")
+
+    elif curScreen == 4:
+        try:
+            editor
+        except NameError:
+            win = tkinter.Tk
+            file = tkfile.askopenfile(initialdir=".", filetypes=[("png image", "*.png")])
+            editor = Editor(file)
+    
+    else:
+        print("ERROR OCCURED IN THE RUNNING LOOP \n screen = " + str(curScreen))
 
     pygame.display.flip()
     clock.tick(60)
