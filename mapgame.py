@@ -1,6 +1,6 @@
 import pygame
 import random
-import time
+import math
 import tkinter
 import tkinter.filedialog as tkfile
 
@@ -27,6 +27,8 @@ class Game:
         self.questions = []
         self.circleStart = [0, (0,0)]
         self.circleEnd = [0, (0,0)]
+        self.pointText = Text(40, "", "lime")
+        self.questionText = Text(50, "Ready?", "black")
 
         for line in fileData:
             self.questions.append(line.split(" "))
@@ -36,12 +38,12 @@ class Game:
 
     def next(self):
         self.nextQuestion = self.questions.pop(0)
-        self.questionText = Text(50, "Find " + self.nextQuestion[0], "black")
+        self.questionText.update(50, "Find " + self.nextQuestion[0], "black")
     
     def answer(self, pos):
-        print("Guess")
-        self.circleStart = [10, pos]
-        self.circleEnd = [10, (int(self.nextQuestion[1]), int(self.nextQuestion[2]))]
+        self.circleStart = [30, pos]
+        self.circleEnd = [30, (int(self.nextQuestion[1]), int(self.nextQuestion[2]))]
+        self.pointText.update(40, str(math.dist(self.circleStart[1], self.circleEnd[1])), "lime")
         self.next()
 
     def initBackground(self, img):
@@ -55,6 +57,7 @@ class Game:
             pygame.draw.circle(screen, "red", self.circleStart[1], 15)   
             pygame.draw.circle(screen, "red", self.circleEnd[1], 15)   
             pygame.draw.line(screen, "red", self.circleStart[1], self.circleEnd[1], 3)
+            self.pointText.draw(self.circleEnd[1][0], self.circleEnd[1][1])
 
 win = tkinter.Tk
 file = tkfile.askopenfile(initialdir=".")
