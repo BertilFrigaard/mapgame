@@ -89,6 +89,8 @@ class Game:
             self.questions.append(line.split(" "))
 
         random.shuffle(self.questions)
+        for question in self.questions:
+            question[0] = question[0].replace("§", " ")
         self.next()
 
     def next(self):
@@ -160,7 +162,7 @@ class Editor:
                 f.write(imgdest)
                 for point in self.pointList:
                     f.write("\n")
-                    f.write(str(point[0]) + " " + str(point[1][0])+ " " + str(point[1][1]))
+                    f.write(str(point[0]).replace(" ", "§") + " " + str(point[1][0])+ " " + str(point[1][1]))
                     
             shutil.copy2(self.file, imgdest)
             global curScreen
