@@ -2,7 +2,7 @@ import pygame
 import random
 import math
 import shutil
-import tkinter
+import os
 import tkinter.filedialog as tkfile
 import tkinter.simpledialog as tksimple
 import tkinter.messagebox as tkmessage
@@ -154,10 +154,13 @@ class Editor:
 
     def done(self):
         if len(self.pointList) < 3:
-            tkmessage.showinfo("Mapgame Editor", "Level need at least two points")
+            tkmessage.showinfo("Mapgame Editor", "Level need at least three points")
         else:
             imgdest = "./img/" + self.levelname + ".png"
-            filedest = "./levels/" + self.levelname + ".txt"
+            filedest = "levels/" + self.levelname + ".txt"
+            if os.path.exists("levels/") == False:
+                os.mkdir("levels/")
+
             with open(filedest, "x") as f:
                 f.write(imgdest)
                 for point in self.pointList:
