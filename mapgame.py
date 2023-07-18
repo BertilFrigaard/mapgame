@@ -1,8 +1,11 @@
 import pygame
 import random
 import math
+import shutil
 import tkinter
 import tkinter.filedialog as tkfile
+import tkinter.simpledialog as tksimple
+import tkinter.messagebox as tkmessage
 
 pygame.init()
 
@@ -117,8 +120,61 @@ class Game:
             self.pointText.draw(self.circleEnd[1][0], self.circleEnd[1][1])
 
 class Editor:
-    def __init__(self, img):
-        print("hi")
+    def __init__(self, file, levelname):
+        self.file = file.name
+        self.levelname = levelname
+        try:
+            open("./levels/" + levelname + ".txt")
+
+        except FileNotFoundError:
+            self.init()
+        else:
+            global curScreen
+            tkmessage.showinfo("Mapgame Editor", "Level already exists")
+            curScreen = 5
+    
+    def init(self):
+        img = pygame.image.load(self.file)
+        self.image = pygame.transform.scale(img, (1400,800)) 
+        self.title = Text(50, self.levelname, "black")
+        self.doneBtn = Button(50, 100, 120, 40, "Done", 35, 28, 10, self.done)
+        self.pointList = []
+
+    def createPoint(self, pos):
+        nameOfPoint = tksimple.askstring("Mapgame Editor", "Name this point")
+        if nameOfPoint:
+            for point in self.pointList:
+                if point[0] == nameOfPoint:
+                    tkmessage.showinfo("Mapgame Editor", "Point whit the name '" + nameOfPoint + "' already exists!")
+                    return
+            text = Text(30, nameOfPoint, "red")
+            self.pointList.append([nameOfPoint, pos, text])
+
+    def done(self):
+        if len(self.pointList) < 3:
+            tkmessage.showinfo("Mapgame Editor", "Level need at least two points")
+        else:
+            imgdest = "./img/" + self.levelname + ".png"
+            filedest = "./levels/" + self.levelname + ".txt"
+            with open(filedest, "x") as f:
+                f.write(imgdest)
+                for point in self.pointList:
+                    f.write("\n")
+                    f.write(str(point[0]) + " " + str(point[1][0])+ " " + str(point[1][1]))
+                    
+            shutil.copy2(self.file, imgdest)
+            global curScreen
+            curScreen = 1
+
+    def draw(self):
+        screen.blit(self.image, (0,0))
+        for point in self.pointList:
+            pygame.draw.circle(screen, "red", point[1], 10)
+            point[2].draw(point[1][0] + 14, point[1][1] - 10)
+            
+        self.title.draw(50,50)
+        self.doneBtn.draw()
+        
 
 homeScreen = Home()
 
@@ -134,7 +190,6 @@ while running:
         try: 
             game
         except NameError:
-            win = tkinter.Tk
             file = tkfile.askopenfile(initialdir=".")
             fileData = [line.strip("\n") for line in file.readlines()]
             image = fileData.pop(0)
@@ -156,10 +211,28 @@ while running:
         try:
             editor
         except NameError:
-            win = tkinter.Tk
             file = tkfile.askopenfile(initialdir=".", filetypes=[("png image", "*.png")])
-            editor = Editor(file)
+            levelname = tksimple.askstring("Mapgame Editor", "What should the level be called?")
+            if levelname:
+                if file:
+                    editor = Editor(file, levelname)
+                else:
+                    curScreen = 1
+            else:
+                curScreen = 1
+        else:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+                if event.type == pygame.MOUSEBUTTONUP:
+                    editor.createPoint(pygame.mouse.get_pos())
+
+            editor.draw()
     
+    elif curScreen == 5:
+        del editor
+        curScreen = 1
     else:
         print("ERROR OCCURED IN THE RUNNING LOOP \n screen = " + str(curScreen))
 
