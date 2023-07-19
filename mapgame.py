@@ -11,8 +11,9 @@ pygame.init()
 
 screen = pygame.display.set_mode((1400,800))
 clock = pygame.time.Clock()
+game = object
 running = True
-curScreen = 1 # 1=Home, 2=Game, 3=Gameover, 4=Create
+curScreen = 1 # 1=Home, 2=Game, 3=Gameover, 4=Create, 5=Leave Editor, 6=Level Selector
 
 class Text:
     def __init__(self, fontSize, text, color):
@@ -26,7 +27,7 @@ class Text:
         screen.blit(self.mySurface, (top, left))
 
 class Button:
-    def __init__(self, left, top, width, height, text, fontSize, textoffsetleft, textoffsettop, func):
+    def __init__(self, left, top, width, height, text, fontSize, textoffsetleft, textoffsettop, func, *args):
         self.btnRect = pygame.Rect(left, top, width, height)
         self.btnText = Text(fontSize, text, "white")
         self.left = left
@@ -36,6 +37,7 @@ class Button:
         self.textoffsetleft = textoffsetleft
         self.textoffsettop = textoffsettop
         self.func = func
+        self.args = args
 
     def draw(self):
         if self.btnRect.collidepoint(pygame.mouse.get_pos()):
@@ -43,13 +45,42 @@ class Button:
             self.btnText.update(self.fontSize, self.text, "black")
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONUP:
-                    self.func()
+                    if self.args:
+                        self.func(self.args)
+                    else:
+                        self.func()
         else:
             pygame.draw.rect(screen, "black", self.btnRect)
             self.btnText.update(self.fontSize, self.text, "white")
 
         self.btnText.draw(self.left + self.textoffsetleft, self.top + self.textoffsettop)
 
+class LevelSelector():
+    def __init__(self):
+        self.levels = []
+        self.background = pygame.transform.scale(pygame.image.load("./img/Final.png"), (1400,800))
+        self.title = Text(50, "Choose the level you want to play", "black")
+        n = 0
+        for file in os.listdir("levels/"):
+            if file.endswith(".txt"):
+                n += 1
+                self.levels.append([file, Button(50, 100 + n * 50, 250, 40, file.strip(".txt")[0:13], 35, 28, 10, self.choose, n - 1)]) 
+    
+    def choose(self, level):
+        global game
+        global curScreen
+        file = open("levels/" + self.levels[level[0]][0], "r")
+        fileData = [line.strip("\n") for line in file.readlines()]
+        image = fileData.pop(0)
+        game = Game(fileData)
+        game.initBackground(pygame.image.load(image))
+        curScreen = 2
+
+    def draw(self):
+        screen.blit(self.background, (0,0))
+        self.title.draw(50, 50)
+        for level in self.levels:
+            level[1].draw()
 
 class Home:
     def __init__(self):
@@ -61,7 +92,7 @@ class Home:
         
     def play(self):
         global curScreen
-        curScreen = 2
+        curScreen = 6
 
     def create(self):
         global curScreen 
@@ -192,15 +223,6 @@ while running:
         homeScreen.draw()
 
     elif curScreen == 2:
-        try: 
-            game
-        except NameError:
-            file = tkfile.askopenfile(initialdir=".")
-            fileData = [line.strip("\n") for line in file.readlines()]
-            image = fileData.pop(0)
-            game = Game(fileData)
-            game.initBackground(pygame.image.load(image))
-
         game.draw()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -238,6 +260,18 @@ while running:
     elif curScreen == 5:
         del editor
         curScreen = 1
+
+    elif curScreen == 6:
+        for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+        try:
+            levelSelector
+        except NameError:
+            levelSelector = LevelSelector()
+        else:
+            levelSelector.draw()
     else:
         print("ERROR OCCURED IN THE RUNNING LOOP \n screen = " + str(curScreen))
 
