@@ -59,7 +59,7 @@ class Button:
 class LevelSelector():
     def __init__(self):
         self.levels = []
-        self.background = pygame.transform.scale(pygame.image.load("./img/Final.png"), (1400,800))
+        self.background = pygame.transform.smoothscale(pygame.image.load("./img/Final.png"), (1400,800))
         self.title = Text(50, "Choose the level you want to play", "black")
         n = 0
         for file in os.listdir("levels/"):
@@ -86,7 +86,7 @@ class LevelSelector():
 class Home:
     def __init__(self):
         print("Home initiated")
-        self.background = pygame.transform.scale(pygame.image.load("./img/Final.png"), (1400,800))
+        self.background = pygame.transform.smoothscale(pygame.image.load("./img/Final.png"), (1400,800))
         self.title = Text(80, "Mapgame", "Black")
         self.playBtn = Button(50, 250, 120, 40, "Play", 35, 28, 10, self.play)
         self.createBtn = Button(50, 320, 120, 40, "Create", 35, 20, 10, self.create)
@@ -133,7 +133,7 @@ class Game:
         if self.questions == []:
             self.gameover = True#"2 hours, 5 minutes & 24 seconds"
             self.gameoverTitle = Text(50, "Congrats! You finished this level in", "black")
-            self.gameoverTime = Text(50, str(time.localtime().tm_hour - self.startTime.tm_hour) + " hours, " + str(time.localtime().tm_min - self.startTime.tm_min) + " minutes & " + str(time.localtime().tm_sec - self.startTime.tm_sec) + " seconds", "black")
+            self.gameoverTime = Text(50, str(max(0, time.localtime().tm_hour - self.startTime.tm_hour)) + " hours, " + str(max(0, time.localtime().tm_min - self.startTime.tm_min)) + " minutes & " + str(max(0, time.localtime().tm_sec - self.startTime.tm_sec)) + " seconds", "black")
             self.gameoverPoints = Text(50, "You finished with " + str(self.points) + "/" + str(self.maxpoints) + " points!", "black")
             self.gameoverButton = Button(50, 200, 180, 40, "Go home", 35, 28, 10, self.gohome)
         else:
@@ -153,7 +153,7 @@ class Game:
         self.next()
 
     def initBackground(self, img):
-        self.image = pygame.transform.scale(img, (1400,800))
+        self.image = pygame.transform.smoothscale(img, (1400,800))
 
     def gohome(self):
         global curScreen
@@ -193,7 +193,7 @@ class Editor:
     
     def init(self):
         img = pygame.image.load(self.file)
-        self.image = pygame.transform.scale(img, (1400,800)) 
+        self.image = pygame.transform.smoothscale(img, (1400,800)) 
         self.title = Text(50, self.levelname, "black")
         self.doneBtn = Button(50, 100, 120, 40, "Done", 35, 28, 10, self.done)
         self.pointList = []
