@@ -115,9 +115,12 @@ class Game:
         self.pointText = Text(40, "", "lime")
         self.questionText = Text(50, "Ready?", "black")
         self.scoreText = Text(40, "Points: 0", "black")
+        self.maxpoints = 0
+        self.gameover = False
 
         for line in fileData:
             self.questions.append(line.split(" "))
+            self.maxpoints += 10
 
         random.shuffle(self.questions)
         for question in self.questions:
@@ -125,11 +128,20 @@ class Game:
         self.next()
 
     def next(self):
-        self.nextQuestion = self.questions.pop(0)
-        self.questionText.update(50, "Find " + self.nextQuestion[0], "black")
-        self.scoreText.update(40, "Points: " + str(self.points), "black")
+        if self.questions == []:
+            self.gameover = True#"2 hours, 5 minutes & 24 seconds"
+            self.gameoverTitle = Text(50, "Congrats! You finished this level in", "black")
+            self.gameoverTime = Text(50, "2 hours, 5 minutes & 24 seconds", "black")
+            self.gameoverPoints = Text(50, "You finished with " + str(self.points) + "/" + str(self.maxpoints) + " points!", "black")
+            self.gameoverButton = Button(50, 200, 180, 40, "Go home", 35, 28, 10, self.gohome)
+        else:
+            self.nextQuestion = self.questions.pop(0)
+            self.questionText.update(50, "Find " + self.nextQuestion[0], "black")
+            self.scoreText.update(40, "Points: " + str(self.points), "black")
     
     def answer(self, pos):
+        if self.gameover:
+            return
         self.circleStart = [30, pos]
         self.circleEnd = [30, (int(self.nextQuestion[1]), int(self.nextQuestion[2]))]
         print(math.dist(self.circleStart[1], self.circleEnd[1]))
@@ -141,16 +153,27 @@ class Game:
     def initBackground(self, img):
         self.image = pygame.transform.scale(img, (1400,800))
 
+    def gohome(self):
+        global curScreen
+        curScreen = 1
+
     def draw(self):
-        screen.blit(self.image, (0,0))  
-        self.questionText.draw(50,50)   
-        self.scoreText.draw(50,90)   
-        if self.circleStart[0] > 0:
-            self.circleStart[0] -= 1
-            pygame.draw.circle(screen, "red", self.circleStart[1], 15)   
-            pygame.draw.circle(screen, "red", self.circleEnd[1], 15)   
-            pygame.draw.line(screen, "red", self.circleStart[1], self.circleEnd[1], 3)
-            self.pointText.draw(self.circleEnd[1][0], self.circleEnd[1][1])
+        if self.gameover:
+            screen.blit(self.image, (0,0))
+            self.gameoverTitle.draw(50,50)
+            self.gameoverTime.draw(50,100)
+            self.gameoverPoints.draw(50,150)
+            self.gameoverButton.draw()
+        else:
+            screen.blit(self.image, (0,0))  
+            self.questionText.draw(50,50)   
+            self.scoreText.draw(50,90)   
+            if self.circleStart[0] > 0:
+                self.circleStart[0] -= 1
+                pygame.draw.circle(screen, "red", self.circleStart[1], 15)   
+                pygame.draw.circle(screen, "red", self.circleEnd[1], 15)   
+                pygame.draw.line(screen, "red", self.circleStart[1], self.circleEnd[1], 3)
+                self.pointText.draw(self.circleEnd[1][0], self.circleEnd[1][1])
 
 class Editor:
     def __init__(self, file, levelname):
