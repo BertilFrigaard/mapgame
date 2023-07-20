@@ -3,6 +3,7 @@ import random
 import math
 import shutil
 import os
+import time
 import tkinter.filedialog as tkfile
 import tkinter.simpledialog as tksimple
 import tkinter.messagebox as tkmessage
@@ -115,6 +116,7 @@ class Game:
         self.pointText = Text(40, "", "lime")
         self.questionText = Text(50, "Ready?", "black")
         self.scoreText = Text(40, "Points: 0", "black")
+        self.startTime = time.localtime()
         self.maxpoints = 0
         self.gameover = False
 
@@ -131,7 +133,7 @@ class Game:
         if self.questions == []:
             self.gameover = True#"2 hours, 5 minutes & 24 seconds"
             self.gameoverTitle = Text(50, "Congrats! You finished this level in", "black")
-            self.gameoverTime = Text(50, "2 hours, 5 minutes & 24 seconds", "black")
+            self.gameoverTime = Text(50, str(time.localtime().tm_hour - self.startTime.tm_hour) + " hours, " + str(time.localtime().tm_min - self.startTime.tm_min) + " minutes & " + str(time.localtime().tm_sec - self.startTime.tm_sec) + " seconds", "black")
             self.gameoverPoints = Text(50, "You finished with " + str(self.points) + "/" + str(self.maxpoints) + " points!", "black")
             self.gameoverButton = Button(50, 200, 180, 40, "Go home", 35, 28, 10, self.gohome)
         else:
