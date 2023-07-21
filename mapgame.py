@@ -85,7 +85,6 @@ class LevelSelector():
 
 class Home:
     def __init__(self):
-        print("Home initiated")
         self.background = pygame.transform.smoothscale(pygame.image.load("./img/Final.png"), (1400,800))
         self.title = Text(80, "Mapgame", "Black")
         self.playBtn = Button(50, 250, 120, 40, "Play", 35, 28, 10, self.play)
@@ -108,7 +107,6 @@ class Home:
 
 class Game:
     def __init__(self, fileData):
-        print("Game initiated")
         self.questions = []
         self.points = 0
         self.circleStart = [0, (0,0)]
@@ -119,12 +117,11 @@ class Game:
         self.startTime = time.localtime()
         self.maxpoints = 0
         self.gameover = False
-
+        random.shuffle(fileData)
         for line in fileData:
             self.questions.append(line.split(" "))
             self.maxpoints += 10
 
-        random.shuffle(self.questions)
         for question in self.questions:
             question[0] = question[0].replace("§", " ")
         self.next()
@@ -146,7 +143,6 @@ class Game:
             return
         self.circleStart = [30, pos]
         self.circleEnd = [30, (int(self.nextQuestion[1]), int(self.nextQuestion[2]))]
-        print(math.dist(self.circleStart[1], self.circleEnd[1]))
         n = 10 - math.floor(min(math.dist(self.circleStart[1], self.circleEnd[1]) * 5, 1000) / 100)
         self.pointText.update(40, str(n), "lime")
         self.points += n
@@ -225,7 +221,7 @@ class Editor:
                     
             shutil.copy2(self.file, imgdest)
             global curScreen
-            curScreen = 1
+            curScreen = 5
 
     def draw(self):
         screen.blit(self.image, (0,0))
